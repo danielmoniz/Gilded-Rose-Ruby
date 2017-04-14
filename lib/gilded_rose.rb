@@ -22,10 +22,16 @@ class GildedRose
     [[quality, 0].max, 50].min # force quality between 0 and 50 inclusive
   end
 
-  def backstage_tick
+  def tick_backstage
     quality_drop = get_backstage_quality_drop(@days_remaining)
-    @days_remaining -= 1
     @quality = limit_quality(@quality - quality_drop)
+    @days_remaining -= 1
+  end
+
+  def tick_normal(quality_drop)
+    quality_drop *= 2 if @days_remaining <= 0
+    @quality = limit_quality(@quality - quality_drop)
+    @days_remaining -= 1
   end
 
   def tick
@@ -37,11 +43,9 @@ class GildedRose
     elsif @name == 'Sulfuras, Hand of Ragnaros'
       return
     elsif @name == 'Backstage passes to a TAFKAL80ETC concert'
-      return backstage_tick
+      return tick_backstage
     end
 
-    quality_drop *= 2 if @days_remaining <= 0
-    @quality = limit_quality(@quality - quality_drop)
-    @days_remaining -= 1
+    tick_normal(quality_drop)
   end
 end
