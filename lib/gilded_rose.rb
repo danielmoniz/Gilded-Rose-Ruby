@@ -7,49 +7,41 @@ class GildedRose
     @quality = quality
   end
 
+  def get_backstage_quality_drop(days_remaining)
+    if days_remaining <= 0
+      return @quality
+    elsif days_remaining <= 5
+      return -3
+    elsif days_remaining <= 10
+      return -2
+    end
+    return -1
+  end
+
+  def limit_quality(quality)
+    [[quality, 0].max, 50].min # force quality between 0 and 50 inclusive
+  end
+
+  def backstage_tick
+    quality_drop = get_backstage_quality_drop(@days_remaining)
+    @days_remaining -= 1
+    @quality = limit_quality(@quality - quality_drop)
+  end
+
   def tick
-    if @name != "Aged Brie" and @name != "Backstage passes to a TAFKAL80ETC concert"
-      if @quality > 0
-        if @name != "Sulfuras, Hand of Ragnaros"
-          @quality = @quality - 1
-        end
-      end
-    else
-      if @quality < 50
-        @quality = @quality + 1
-        if @name == "Backstage passes to a TAFKAL80ETC concert"
-          if @days_remaining < 11
-            if @quality < 50
-              @quality = @quality + 1
-            end
-          end
-          if @days_remaining < 6
-            if @quality < 50
-              @quality = @quality + 1
-            end
-          end
-        end
-      end
+    quality_drop = 1
+    if @name == 'Conjured Mana Cake'
+      quality_drop = 2
+    elsif @name == 'Aged Brie'
+      quality_drop = -1
+    elsif @name == 'Sulfuras, Hand of Ragnaros'
+      return
+    elsif @name == 'Backstage passes to a TAFKAL80ETC concert'
+      return backstage_tick
     end
-    if @name != "Sulfuras, Hand of Ragnaros"
-      @days_remaining = @days_remaining - 1
-    end
-    if @days_remaining < 0
-      if @name != "Aged Brie"
-        if @name != "Backstage passes to a TAFKAL80ETC concert"
-          if @quality > 0
-            if @name != "Sulfuras, Hand of Ragnaros"
-              @quality = @quality - 1
-            end
-          end
-        else
-          @quality = @quality - @quality
-        end
-      else
-        if @quality < 50
-          @quality = @quality + 1
-        end
-      end
-    end
+
+    quality_drop *= 2 if @days_remaining <= 0
+    @quality = limit_quality(@quality - quality_drop)
+    @days_remaining -= 1
   end
 end
